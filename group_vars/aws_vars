@@ -2,21 +2,21 @@
 config:
   region: us-east-1
   vpc:
-    name: RMS_VPC
-    key: VPC
+    name: <VPC_NAME>
+    key: <VPC_KEY>
   ec2:
-    server0: rms-production
+    server0: <PRODUCTION>
   sg:
-    web_teir: rms_web_sg
-    rds_teir: rms_rds_sg
+    web_teir: <WEB_TEIR>
+    rds_teir: <RDS_TEIR>
   rds:
-    instance: rms-rds
-    engine: MySQL
-    subnet_group: "RMS RDS Subnet Group"
+    instance: <RDS_INSTANCE>
+    engine: <MySQL>
+    subnet_group: "RDS Subnet Group"
     db:
-      user: rms
-      name: rms_calculator
-      password: dse4567uio8765trfghu7y6
+      user: <DB_USER>
+      name: <DB_NAME>
+      password: <DB_PASSWORD>
 
 aws:
   env:

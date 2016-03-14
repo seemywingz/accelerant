@@ -1,8 +1,8 @@
-RMS Deploy: AWS & Server Configuration
+AWS & Server Configuration Boilerplate
 =============================
 
-###Usage
-####this playbook does not manage databases
+### Usage
+this playbook does not manage databases
 
   1. Check out this repository and `chmod 0600 keys/*`
 
@@ -10,24 +10,37 @@ RMS Deploy: AWS & Server Configuration
 
   3. Be on Network...
 
-## URLS
+## Setup
+
+  1. Clone repo
+
+  `git clone git@bitbucket.org:kevinjayne/accelerant.git`
+
+  2. Change the configurations 'group_vars/aws_vars' to suit the needs of the project
+
+  3. Generate deploy keys in the keys directory
+
+  `cd keys; ssh-keygen`
+
+  4. Add AWS IAM credentials to 'vault/encrypted_vars' and create unique encryption token and save it as 'vault/token' and encrypt the file using ansible vault
+
+  `ansible-vault encrypt vault/encrypted_vars`
 
 
-## Deploy Commands
 
-**Production**
+# Deploy Commands
 
-  # AWS Setup
+## *Production*
+
+  ### AWS
 
    `ansible-playbook aws.yml`
 
-  # Serer Setup
+  ### Server
 
    `ansible-playbook server.yml`
 
-
-
-**SSH To Production** (must be inside this repo)
+**SSH To Production** (must be inside this repo)  
 
    `ssh -F ssh.config production`
 

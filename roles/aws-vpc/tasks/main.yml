@@ -2,7 +2,7 @@
 - name: Include Variables
   include_vars: "{{ item }}"
   with_items:
-    - vault/cyphers
+    - vault/encrypted_vars
     - group_vars/aws_vars
 
 - name: Create AWS VPC
