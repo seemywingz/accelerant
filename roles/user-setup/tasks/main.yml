@@ -1,0 +1,39 @@
+# vim:ft=ansible
+- name: Set Authorized Keys
+  authorized_key:
+    user={{ system_user }}
+    key="{{ item }}"
+    manage_dir=yes
+  with_file:
+    - "{{ key.pub }}"
+
+- name: Passwordless Sudo
+  lineinfile:
+    state=present
+    create=yes
+    dest=/etc/sudoers.d/sudoers
+    line="{{ item }} ALL=(ALL) NOPASSWD:ALL"
+    mode=0440
+  with_items:
+    - "{{ system_user }}"
+  become: yes
+
+- name: Create Keys Directory
+  file:
+    path=~/keys
+    state=directory
+    mode=700
+
+- name: Configure Dotfiles
+  template:
+      src={{ item.src }}
+      dest=/home/{{ system_user }}/{{ item.dest }}
+  with_items:
+    - { src: 'zshrc.tpl', dest: '.zshrc' }
+    - { src: 'tmux.conf.tpl', dest: '.tmux.conf' }
+
+- name: set shell to zsh
+  user:
+    name={{ system_user }}
+    shell=/bin/zsh
+  become: yes

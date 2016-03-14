@@ -1,0 +1,42 @@
+
+- name: Include Variables
+  include_vars: "{{ item }}"
+  with_items:
+    - vault/cyphers
+    - group_vars/aws_vars
+
+- name: Create AWS VPC
+  environment: "{{ aws.env }}"
+  ec2_vpc:
+    state: present
+    cidr_block: "{{ item.value.cidr_block }}"
+    resource_tags: "{{ item.value.resource_tags }}"
+    subnets: "{{ item.value.subnets }}"
+    route_tables: "{{ item.value.route_tables }}"
+    internet_gateway: True
+  register: vpc
+  with_dict: "{{ aws.vpc }}"
+
+- name: Create an AWS private key pair
+  environment: "{{ aws.env }}"
+  ec2_key:
+    name: "{{ aws.key }}"
+  register: ec2_key
+
+- name: save AWS private key pair
+  copy:
+    content="{{ ec2_key.key.private_key }}"
+    dest="keys/{{ aws.key }}.pem"
+    mode=0600
+  when: ec2_key.changed
+
+- name: Create EC2 Security Groups
+  environment: "{{ aws.env }}"
+  ec2_group:
+    name: "{{ item.key }}"
+    description: "{{ item.value.description }}"
+    rules: "{{ item.value.rules }}"
+    rules_egress: "{{ item.value.rules_egress }}"
+    vpc_id: "{{ vpc.results[0].vpc.id }}"
+  register: sg
+  with_dict: "{{ aws.security_groups }}"

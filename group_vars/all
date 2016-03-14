@@ -1,0 +1,90 @@
+# Group Vars for all machines
+# Maintainer: Kevin
+
+# ssh user
+system_user: ubuntu
+
+# Packages
+packages:
+  default:
+    - git
+    - git-doc
+    - vim-gnome
+    - vim-doc
+    - vim-scripts
+    - tmux
+    - zsh
+    - python-pip
+    - htop
+
+# CAP DEPLOY
+deploy:
+  user: cap
+  key: "{{ lookup('file', '{{ key.pub}}') }}"
+  sudo_perms: "/etc/init.d/nginx, /bin/mv, /bin/mkdir, /bin/ln, /usr/sbin/update-rc.d, /bin/chown"
+  permissions:
+    - { dir: '/srv/', entity: 'cap', etype: 'user', perms: 'rwx' }
+
+# SSH
+key:
+  pub: keys/key.pub
+
+# AWS-CLI
+aws_cli:
+  url: https://s3.amazonaws.com/aws-cli/awscli-bundle.zip
+  zip: /tmp/awscli-bundle.zip
+  dir: /tmp/
+
+# wp-cli vars
+wp_cli_phar_url: https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+bin_path: /usr/local/bin/wp
+
+# DEFAULT ACLs
+acl:
+  permissions:
+    - { dir: '/srv/', entity: '{{ system_user }}', etype: 'user', perms: 'rwx' }
+    - { dir: '/srv/', entity: 'www-data', etype: 'user', perms: 'rwx' }
+
+# APACHE
+networks:
+  allow:
+    - "10.0.0.0/24"
+    - "10.0.1.0/24"
+    - "10.0.100.0/24"
+    - "204.210.139.149/32"
+
+# APP
+app_name: rev.com
+
+app:
+  repo: git@bitbucket.org:EMN/rev.git
+  version: master
+  path: /srv/{{ app_name }}
+  log: /srv/{{ app_name }}/log
+
+# POSTGRES
+postgres:
+  apt_key: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+  apt_repo: "deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main"
+  packages:
+    - postgresql
+    - pgadmin3
+    - libpq-dev
+    - python-psycopg2
+
+# RUBY
+rbenv:
+  group: ruby
+  user: ruby
+  path: /usr/local/rbenv
+  ruby_version:
+    - 2.3.0
+    - 2.2.3
+  global_version: 2.2.3
+  plugins:
+    - { src: 'git://github.com/sstephenson/ruby-build.git', dest: 'ruby-build' }
+    - { src: 'https://github.com/sstephenson/rbenv-vars.git', dest: 'rbenv-vars' }
+
+rubyacl:
+  acl:
+      - { dir: "{{ rbenv.path }}", entity: "{{ rbenv.group }}", etype: 'group', perms: 'rwx' }

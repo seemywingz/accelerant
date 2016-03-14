@@ -1,0 +1,36 @@
+# vim:ft=ansible
+- name: Install Node PPA Dependencies
+  become: yes
+  shell: curl -sL https://deb.nodesource.com/setup_4.x | bash -
+
+- name: Install NodeJS and Other Required APT Packages
+  become: yes
+  apt:
+    name={{ item }}
+    state=present
+  with_items:
+    - nodejs
+    - librsvg2-dev
+
+- name: Install Gulp Globally
+  become: yes
+  command: npm install --global {{ item }}
+  with_items:
+    - gulp
+    - bower
+
+- name: Install PM2
+  become: yes
+  npm: name=pm2 global=yes
+
+#- name: Permission Srv Directory
+#  become: yes
+#  file:
+#    path=/srv
+#    state=directory
+#    owner=cap
+#    group=emndev
+#    mode=0775
+#  tags:
+#    - node_ecosystem
+

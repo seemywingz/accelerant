@@ -1,0 +1,19 @@
+# vim:ft=ansible
+- name: Upgrade All Packages to Latest
+  become: yes
+  apt:
+     upgrade=dist
+     update_cache=yes
+
+- name: Set hostname
+  become: yes
+  hostname: name="{{ inventory_hostname }}"
+
+- name: Install Default Packages
+  become: yes
+  apt: pkg={{ item }} state=present
+  with_items: "{{ packages.default }}"
+
+- name: Clean up unused packages
+  become: yes
+  shell: apt-get autoremove --purge -y

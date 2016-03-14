@@ -1,0 +1,45 @@
+# vim:ft=ansible
+
+- name: Set up sudo capabilities for deploy user.
+  lineinfile:
+    state=present
+    create=yes
+    dest=/etc/sudoers.d/{{ deploy.user }}
+    line="{{ deploy.user }} ALL=NOPASSWD:{{ deploy.sudo_perms }}"
+    mode=0440
+  become: yes
+
+- name: Make Deploy User
+  become: yes
+  user:
+    name={{ deploy.user }}
+    createhome=yes
+
+- name: Set up authorized_keys for deployment user.
+  become: yes
+  authorized_key:
+    user={{ deploy.user }}
+    key={{ deploy.key }}
+
+- name: Set Access Control Lists
+  become: yes
+  acl:
+    state=present
+    name={{ item.dir }}
+    etype={{ item.etype }}
+    entity={{ item.entity }}
+    permissions={{ item.perms }}
+    recursive=yes
+  with_items: "{{ deploy.permissions }}"
+
+- name: Set Default Access Control Lists
+  become: yes
+  acl:
+    default=yes
+    state=present
+    name={{ item.dir }}
+    etype={{ item.etype }}
+    entity={{ item.entity }}
+    permissions={{ item.perms }}
+    recursive=yes
+  with_items: "{{ deploy.permissions }}"

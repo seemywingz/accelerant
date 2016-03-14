@@ -1,0 +1,118 @@
+
+config:
+  region: us-east-1
+  vpc:
+    name: RMS_VPC
+    key: VPC
+  ec2:
+    server0: rms-production
+  sg:
+    web_teir: rms_web_sg
+    rds_teir: rms_rds_sg
+  rds:
+    instance: rms-rds
+    engine: MySQL
+    subnet_group: "RMS RDS Subnet Group"
+    db:
+      user: rms
+      name: rms_calculator
+      password: dse4567uio8765trfghu7y6
+
+aws:
+  env:
+    AWS_ACCESS_KEY_ID: "{{ AWS_ACCESS_KEY_ID }}"
+    AWS_SECRET_ACCESS_KEY: "{{ AWS_SECRET_ACCESS_KEY }}"
+    EC2_REGION: "{{ config.region}}"
+  key: "{{ config.vpc.key }}"
+  vpc:
+    # The absence or presence of subnets deletes or creates them respectively.
+    "{{ config.vpc.name }}":
+      resource_tags:
+        Name: "{{ config.vpc.name }}"
+      cidr_block: 10.0.0.0/16
+      subnets:
+        - cidr: 10.0.0.0/24                  #0
+          az: us-east-1a
+          resource_tags: { "Tier" : "Web" }
+        - cidr: 10.0.1.0/24                  #1
+          az: us-east-1a
+          resource_tags: { "Tier" : "RDS" }
+        - cidr: 10.0.100.0/24                #2
+          az: us-east-1e
+          resource_tags: { "Tier" : "RDS" }
+      route_tables:
+        - subnets:
+            - 10.0.0.0/24
+            - 10.0.1.0/24
+            - 10.0.100.0/24
+          routes:
+            - dest: 0.0.0.0/0
+              gw: igw
+  security_groups:
+    "{{ config.sg.web_teir}}":
+       name: "{{ config.sg.web_teir}}"
+       description: allow connections on ports 80 and 443
+       rules:
+         - proto: tcp
+           from_port: 80
+           to_port: 80
+           cidr_ip: 0.0.0.0/0
+         - proto: tcp
+           from_port: 443
+           to_port: 443
+           cidr_ip: 0.0.0.0/0
+         - proto: all
+           cidr_ip: 64.72.88.82/32 #allow all emn traffic
+         - proto: all
+           cidr_ip: 10.0.0.0/16 #allow internal traffic
+       rules_egress: # allows all outgoing traffic
+         - proto: all
+           cidr_ip: 0.0.0.0/0
+    "{{ config.sg.rds_teir}}":
+      name: "{{ config.sg.rds_teir}}"
+      description: allow connections to rds from within VPC
+      rules:
+        - proto: tcp
+          from_port: 3306
+          to_port: 3306
+          cidr_ip: 10.0.0.0/24
+        - proto: all
+          cidr_ip: 10.0.0.0/16 #allow internal traffic
+      rules_egress: # allows all outgoing traffic
+         - proto: all
+           cidr_ip: 0.0.0.0/0
+
+ec2_instances:
+  "{{ config.ec2.server0 }}":
+    image: ami-fce3c696 # Ubintu 14.04
+    key: "{{ aws.key }}"
+    type: t2.small
+    group: "{{ config.sg.web_teir}}"
+    vpc_subnet_id: "{{ vpc.results[0].subnets[0].id }}" # Teir: Web
+    assign_publick_ip: yes
+    volumes:
+      - device_name: /dev/sda1
+        volume_size: 30
+    tags: # must provide Name to ensure only one instance is created
+      Name: "{{ config.ec2.server0 }}"
+
+rds:
+  subnet_groups:
+    "{{ config.rds.subnet_group }}":
+      description: RDS Subnet Group
+      subnets:
+        - "{{ vpc.results[0].subnets[1].id }}" # Tier: RDS
+        - "{{ vpc.results[0].subnets[2].id }}" # Tier: RDS
+  instances:
+    rds_instance0:
+      db_name: "{{ config.rds.db.name }}"
+      db_engine: "{{ config.rds.engine }}"
+      size: 10
+      instance_type: db.t2.micro
+      username: "{{ config.rds.db.user }}"
+      password: "{{ config.rds.db.password }}"
+      subnet: "{{ config.rds.subnet_group }}"
+      vpc_security_groups: "{{ sg.results[1].group_id }}"
+      publicly_accessible: yes
+      tags:
+        name: "{{ config.rds.instance }}"
