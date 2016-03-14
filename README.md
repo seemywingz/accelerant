@@ -14,7 +14,7 @@ this playbook does not manage databases
 
   1. Clone repo
 
-  `git clone git@bitbucket.org:kevinjayne/accelerant.git`
+  `git clone git@bitbucket.org:EMN/accelerant.git`
 
   2. Change the configurations 'group_vars/aws_vars' to suit the needs of the project
 
