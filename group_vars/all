@@ -51,40 +51,12 @@ networks:
     - "10.0.0.0/24"
     - "10.0.1.0/24"
     - "10.0.100.0/24"
-    - "204.210.139.149/32"
 
 # APP
 app_name: example.com
 
 app:
-  repo: git@bitbucket.org:EMN/rev.git
+  repo: git@bitbucket.org:EMN/slug.git
   version: master
   path: /srv/{{ app_name }}
   log: /srv/{{ app_name }}/log
-
-# POSTGRES
-postgres:
-  apt_key: https://www.postgresql.org/media/keys/ACCC4CF8.asc
-  apt_repo: "deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main"
-  packages:
-    - postgresql
-    - pgadmin3
-    - libpq-dev
-    - python-psycopg2
-
-# RUBY
-rbenv:
-  group: ruby
-  user: ruby
-  path: /usr/local/rbenv
-  ruby_version:
-    - 2.3.0
-    - 2.2.3
-  global_version: 2.2.3
-  plugins:
-    - { src: 'git://github.com/sstephenson/ruby-build.git', dest: 'ruby-build' }
-    - { src: 'https://github.com/sstephenson/rbenv-vars.git', dest: 'rbenv-vars' }
-
-rubyacl:
-  acl:
-      - { dir: "{{ rbenv.path }}", entity: "{{ rbenv.group }}", etype: 'group', perms: 'rwx' }
