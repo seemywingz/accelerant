@@ -54,7 +54,7 @@ networks:
     - "204.210.139.149/32"
 
 # APP
-app_name: rev.com
+app_name: example.com
 
 app:
   repo: git@bitbucket.org:EMN/rev.git
