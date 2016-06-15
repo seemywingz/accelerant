@@ -20,6 +20,7 @@
     instance_tags: "{{ item.value.tags }}"
     count_tag: "{{ item.value.tags }}"
     volumes: "{{ item.value.volumes }}"
+    termination_protection: yes
     exact_count: 1
   register: ec2_results
   with_dict: "{{ ec2_instances }}"
