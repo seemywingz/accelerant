@@ -30,7 +30,6 @@
       dest=/home/{{ system_user }}/{{ item.dest }}
   with_items:
     - { src: 'zshrc.tpl', dest: '.zshrc' }
-    - { src: 'tmux.conf.tpl', dest: '.tmux.conf' }
 
 - name: set shell to zsh
   user:

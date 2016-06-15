@@ -19,18 +19,6 @@
     - gulp
     - bower
 
-- name: Install PM2
-  become: yes
-  npm: name=pm2 global=yes
-
-#- name: Permission Srv Directory
+#- name: Install PM2
 #  become: yes
-#  file:
-#    path=/srv
-#    state=directory
-#    owner=cap
-#    group=emndev
-#    mode=0775
-#  tags:
-#    - node_ecosystem
-
+#  npm: name=pm2 global=yes

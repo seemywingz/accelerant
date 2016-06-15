@@ -12,7 +12,6 @@ packages:
     - vim-gnome
     - vim-doc
     - vim-scripts
-    - tmux
     - zsh
     - python-pip
     - htop
@@ -54,9 +53,3 @@ networks:
 
 # APP
 app_name: example.com
-
-app:
-  repo: git@bitbucket.org:EMN/slug.git
-  version: master
-  path: /srv/{{ app_name }}
-  log: /srv/{{ app_name }}/log
