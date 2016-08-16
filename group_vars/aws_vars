@@ -24,7 +24,7 @@ ec2_instances:
     key: "{{ aws.key }}"
     type: t2.micro
     group: "{{ config.sg.web_teir}}"
-    vpc_subnet_id: "{{ vpc.results[0].subnets[0].id }}" # Teir: Web
+    vpc_subnet_id: "{{ subnet_id_web }}" # Teir: Web
     assign_publick_ip: yes
     volumes:
       - device_name: /dev/sda1

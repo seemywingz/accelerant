@@ -1,8 +1,7 @@
 
 
 - include: utils/vpc_info.yml
-  tags:
-    - ec2_include
+- include: utils/subnet_info.yml
 
 - name: Create EC2 Instances
   environment: "{{ aws.env }}"
