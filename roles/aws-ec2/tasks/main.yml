@@ -1,12 +1,8 @@
 
 
-- name: Include Variables
-  include_vars: "{{ item }}"
-  with_items:
-    - vault/encrypted_vars
-    - group_vars/aws_vars
+- include: utils/vpc_info.yml
   tags:
-    - vpc_info
+    - ec2_include
 
 - name: Create EC2 Instances
   environment: "{{ aws.env }}"

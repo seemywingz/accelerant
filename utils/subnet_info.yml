@@ -1,0 +1,45 @@
+
+- include: utils/vpc_info.yml
+  when: 'vpc_id is undefined'
+
+# - name: Get WEB Subnet Info
+- shell: "aws ec2 describe-subnets --region {{ config.region }} --filters 'Name=tag:Tier,Values=Web'"
+  environment: "{{ aws.env }}"
+  delegate_to: localhost
+  register: subnet_info
+  tags:
+    - subnet_info
+
+# - name: Set Web Teir Subnet ID
+- set_fact:
+    subnet_id_web: "{{ (subnet_info.stdout|from_json).Subnets[0].SubnetId}}"
+  tags:
+    - subnet_info
+
+# - name: Get RDS Subnet Info
+- shell: "aws ec2 describe-subnets --region {{ config.region }} --filters 'Name=tag:Tier,Values=RDS'"
+  environment: "{{ aws.env }}"
+  delegate_to: localhost
+  register: subnet_info
+  tags:
+    - subnet_info
+
+# - name: Set RDS Teir 1 Subnet ID
+- set_fact:
+    subnet_id_rds1: "{{ (subnet_info.stdout|from_json).Subnets[0].SubnetId}}"
+  tags:
+        - subnet_info
+
+# - name: Set RDS Teir 2 Subnet ID
+- set_fact:
+    subnet_id_rds2: "{{ (subnet_info.stdout|from_json).Subnets[2].SubnetId}}"
+  tags:
+        - subnet_info
+
+- name: Debug Subnet ID(s)
+  debug:
+    var={{ item }}
+  with_items:
+    - subnet_id_web
+    - subnet_id_rds1
+    - subnet_id_rds2

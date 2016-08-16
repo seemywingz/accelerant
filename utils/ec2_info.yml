@@ -1,0 +1,23 @@
+#
+# - name: Get EC2 Instance ID for Server0
+#   shell: 'aws ec2 describe-instances --region {{ config.region }} --filters "Name=tag:Name,Values={{ ec2_instances.server0.tags.Name }}"'
+#   environment: "{{ aws.env }}"
+#   delegate_to: localhost
+#   register: ec2_instance
+#   tags:
+#     - ec2_info
+
+- name: Get EC2 Instance ID for Server0
+  shell: 'aws ec2 wait instance-exists --region {{ config.region }} --filters "Name=tag:Name,Values={{ ec2_instances.server0.tags.Name }}"'
+  environment: "{{ aws.env }}"
+  delegate_to: localhost
+  register: ec2_instance
+  tags:
+    - ec2_info
+
+- debug:
+    msg=ec2_info
+
+# - name: Set EC2 Instance Information
+#   set_fact:
+#     ec2_instance_0: "{{ (ec2_instance.stdout|from_json) }}"

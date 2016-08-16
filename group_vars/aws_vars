@@ -2,13 +2,11 @@
 config:
   region: us-east-1
   vpc:
-    name: <VPC_NAME>
-    key: <VPC_KEY>
-  ec2:
-    server0: aws-production
+    name: VPC_NAME
+    key: VPC_KEY_NAME
   sg:
-    web_teir: <WEB_TEIR>
-    rds_teir: <RDS_TEIR>
+    web_teir: WEB_TEIR_NAME
+    rds_teir: RDS_TEIR_NAME
   rds:
     instance: <RDS_INSTANCE>
     engine: <MySQL>
@@ -17,6 +15,36 @@ config:
       user: <DB_USER>
       name: <DB_NAME>
       password: <DB_PASSWORD>
+
+ec2_instances:
+  server0:
+    tags: # must provide Name to ensure only one instance is created
+      Name: server0
+    image: ami-fce3c696 # Ubintu 14.04
+    key: "{{ aws.key }}"
+    type: t2.micro
+    group: "{{ config.sg.web_teir}}"
+    vpc_subnet_id: "{{ vpc.results[0].subnets[0].id }}" # Teir: Web
+    assign_publick_ip: yes
+    volumes:
+      - device_name: /dev/sda1
+        volume_size: 30
+        delete_on_termination: true
+
+elb_instances:
+   balancer0:
+     name: elb-name
+     state: present
+     instance_ids:
+       - "{{ elb_instance_0 }}"
+       - "{{ elb_instance_1 }}"
+     scheme: internal
+     subnets:
+       - "{{ subnetid_web }}"
+     listeners:
+       - protocol: tcp
+         load_balancer_port: 9090
+         instance_port: 9090
 
 aws:
   env:
@@ -81,20 +109,6 @@ aws:
       rules_egress: # allows all outgoing traffic
          - proto: all
            cidr_ip: 0.0.0.0/0
-
-ec2_instances:
-  "{{ config.ec2.server0 }}":
-    image: ami-fce3c696 # Ubintu 14.04
-    key: "{{ aws.key }}"
-    type: t2.small
-    group: "{{ config.sg.web_teir}}"
-    vpc_subnet_id: "{{ vpc.results[0].subnets[0].id }}" # Teir: Web
-    assign_publick_ip: yes
-    volumes:
-      - device_name: /dev/sda1
-        volume_size: 30
-    tags: # must provide Name to ensure only one instance is created
-      Name: "{{ config.ec2.server0 }}"
 
 rds:
   subnet_groups:

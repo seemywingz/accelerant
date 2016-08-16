@@ -1,0 +1,20 @@
+
+# - name: Set Common Variables
+- include_vars: "{{ item }}"
+  with_items:
+    - vault/encrypted_vars
+    - group_vars/aws_vars
+
+# - name: Get VPC Info
+- shell: "aws ec2 describe-vpcs --region {{ config.region }} --filters 'Name=tag:Name,Values={{ config.vpc.name }}'"
+  environment: "{{ aws.env }}"
+  delegate_to: localhost
+  register: vpc_info
+
+# - name: Set vpc_id
+- set_fact:
+    vpc_id: "{{ (vpc_info.stdout|from_json).Vpcs[0].VpcId }}"
+
+- name: Debug VPC ID
+  debug:
+    var=vpc_id
