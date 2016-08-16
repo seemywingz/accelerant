@@ -5,7 +5,7 @@ config:
     name: <VPC_NAME>
     key: <VPC_KEY>
   ec2:
-    server0: <PRODUCTION>
+    server0: aws-production
   sg:
     web_teir: <WEB_TEIR>
     rds_teir: <RDS_TEIR>
