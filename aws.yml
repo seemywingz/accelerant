@@ -1,0 +1,7 @@
+
+- name: Setup AWS
+  hosts: localhost
+  roles:
+    - {role: aws-vpc, tags: ['vpc']}
+    - {role: aws-ec2, tags: ['ec2']}
+    - {role: aws-rds, tags: ['rds']}

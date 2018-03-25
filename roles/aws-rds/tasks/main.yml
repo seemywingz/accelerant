@@ -1,0 +1,36 @@
+
+- name: Include Variables
+  include_vars: "{{ item }}"
+  with_items:
+    - vault/encrypted_vars
+    - group_vars/aws_vars
+
+- name: Create RDS Subnet Group
+  environment: "{{ aws.env }}"
+  rds_subnet_group:
+    state: present
+    name: "{{ item.key }}"
+    description: "{{ item.value.description }}"
+    subnets: "{{ item.value.subnets }}"
+  with_dict: "{{ rds.subnet_groups }}"
+  tags:
+    - aws_rds
+
+- name: Create RDS Instance
+  environment: "{{ aws.env }}"
+  rds:
+    command: create
+    instance_name: "{{ item.value.tags.name }}"
+    db_name: "{{ item.value.db_name }}"
+    db_engine: "{{ item.value.db_engine }}"
+    size: "{{ item.value.size }}"
+    instance_type: "{{ item.value.instance_type }}"
+    username: "{{ item.value.username }}"
+    password: "{{ item.value.password }}"
+    subnet: "{{ item.value.subnet }}"
+    vpc_security_groups: "{{ item.value.vpc_security_groups }}"
+    tags: "{{ item.value.tags }}"
+    publicly_accessible: "{{ item.value.publicly_accessible }}"
+  with_dict: "{{rds.instances}}"
+  tags:
+    - aws_rds

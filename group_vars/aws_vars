@@ -1,0 +1,96 @@
+
+config:
+  region: us-east-1
+  vpc:
+    name: electrum
+    key: elektrum
+  sg:
+    teir_1: teir_1_NAME
+  #   rds_teir: RDS_TEIR_NAME
+  # rds:
+  #   instance: <RDS_INSTANCE>
+  #   engine: <MySQL>
+  #   subnet_group: "RDS Subnet Group"
+  #   db:
+  #     user: <DB_USER>
+  #     name: <DB_NAME>
+  #     password: <DB_PASSWORD>
+
+ec2_instances:
+  server0:
+    tags: # must provide Name to ensure only one instance is created
+      Name: electrum-server0
+    image: ami-fce3c696 # Ubintu 14.04
+    key: "{{ aws.key }}"
+    type: t2.micro
+    group: "{{ config.sg.teir_1}}"
+    vpc_subnet_id: "{{ subnet_id_web }}" # Teir: Web
+    assign_publick_ip: yes
+    volumes:
+      - device_name: /dev/sda1
+        volume_size: 30
+        delete_on_termination: true
+
+elb_instances:
+   balancer0:
+     name: elb-name
+     state: present
+     instance_ids:
+       - "{{ elb_instance_0 }}"
+       - "{{ elb_instance_1 }}"
+     scheme: internal
+     subnets:
+       - "{{ subnetid_web }}"
+     listeners:
+       - protocol: tcp
+         load_balancer_port: 9090
+         instance_port: 9090
+
+aws:
+  env:
+    AWS_ACCESS_KEY_ID: "{{ AWS_ACCESS_KEY_ID }}"
+    AWS_SECRET_ACCESS_KEY: "{{ AWS_SECRET_ACCESS_KEY }}"
+    EC2_REGION: "{{ config.region}}"
+  key: "{{ config.vpc.key }}"
+  vpc:
+    # The absence or presence of subnets deletes or creates them respectively.
+    "{{ config.vpc.name }}":
+      resource_tags:
+        Name: "{{ config.vpc.name }}"
+      cidr_block: 10.0.0.0/16
+      subnets:
+        - cidr: 10.0.0.0/24                  #0
+          az: us-east-1a
+          resource_tags: { "Tier" : "Web" }
+        - cidr: 10.0.1.0/24                  #1
+          az: us-east-1a
+          resource_tags: { "Tier" : "RDS" }
+        - cidr: 10.0.100.0/24                #2
+          az: us-east-1e
+          resource_tags: { "Tier" : "RDS" }
+      route_tables:
+        - subnets:
+            - 10.0.0.0/24
+            - 10.0.1.0/24
+            - 10.0.100.0/24
+          routes:
+            - dest: 0.0.0.0/0
+              gw: igw
+  security_groups:
+    "{{ config.sg.teir_1}}":
+       name: "{{ config.sg.teir_1}}"
+       description: allow connections to SSH only
+       rules:
+         - proto: tcp
+           from_port: 22
+           to_port: 22
+           cidr_ip: 67.250.116.251/24
+         - proto: tcp
+           from_port: 10000
+           to_port: 10000
+           cidr_ip: 67.250.116.251/24
+        #  - proto: all
+        #    cidr_ip: 10.0.0.0/16 #allow internal traffic
+       rules_egress: # allows all outgoing traffic
+        #  - proto: all
+        #    cidr_ip: 0.0.0.0/0

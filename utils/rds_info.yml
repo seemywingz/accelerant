@@ -1,0 +1,25 @@
+
+- name: Get RDS Info
+  shell: "aws rds describe-db-instances --db-instance-identifier {{ config.rds.instance }} --region {{ config.region }}"
+  environment: "{{ aws.env }}"
+  delegate_to: localhost
+  register: rdp_info
+  tags:
+    - info
+  when: "local_mysql_db is undefined"
+
+# - name: Debug RDS info
+#   debug:
+#     msg='{{ (rdp_info.stdout|from_json).DBInstances[0] }}'
+#   tags:
+#     - info
+
+- name: Set Environment Database Host
+  set_fact:
+    mysql_host: "{{(rdp_info.stdout|from_json).DBInstances[0].Endpoint.Address}}"
+  when: "'aws-servers' in group_names"
+
+- name: Set Environment Database Host
+  set_fact:
+    mysql_host: "{{ mysql.host }}"
+  when: "'aws-servers' not in group_names"
